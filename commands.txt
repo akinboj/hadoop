@@ -1,0 +1,17 @@
+docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-base-hadoop:1.0.0 --file Dockerfile .
+
+docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-hadoop-namenode:1.0.0-snapshot --file Dockerfile .
+
+docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-hadoop-datanode:1.0.0-snapshot --file Dockerfile .
+
+FROM fhirfactory/pegacorn-base-hadoop:1.0.0
+
+
+docker run --rm -p 9870:9870 --name namenode-server pegacorn-hadoop-namenode:1.0.0-snapshot
+
+docker run --rm -p 9864:9864 --name datanode-server pegacorn-hadoop-datanode:1.0.0-snapshot
+
+docker run --rm --link namenode-server -p 9864:9864 --name datanode-server pegacorn-hadoop-datanode:1.0.0-snapshot
+
+
+cat /opt/hadoop-3.3.0/etc/hadoop/core-site.xml
