@@ -1,4 +1,5 @@
 docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-base-hadoop:1.0.0 --file Dockerfile .
+<<<<<<< HEAD
 
 docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-hadoop-namenode:1.0.0-snapshot --file Dockerfile .
 
@@ -15,3 +16,5 @@ docker run --rm --link namenode-server -p 9864:9864 --name datanode-server pegac
 
 
 cat /opt/hadoop-3.3.0/etc/hadoop/core-site.xml
+=======
+>>>>>>> 816d200c4f90479b9c7bf7bbeebb40777692252c
