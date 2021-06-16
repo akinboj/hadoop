@@ -17,8 +17,5 @@
 <!-- Put site-specific property overrides in this file. -->
 
 <configuration>
-<property>
-<name>fs.default.name</name>
-<value>hdfs://pegacorn-namenode.site-a.svc.cluster.local:8020</value>
-</property>
+<property><name>dfs.namenode.datanode.registration.ip-hostname-check</name><value>false</value></property>
 </configuration>
