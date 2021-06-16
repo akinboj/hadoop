@@ -1,20 +1,10 @@
 docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-base-hadoop:1.0.0 --file Dockerfile .
-<<<<<<< HEAD
 
 docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-hadoop-namenode:1.0.0-snapshot --file Dockerfile .
 
+\helm\helm upgrade pegacorn-namenode-site-a --install --namespace site-a --set serviceName=pegacorn-namenode,hostPathNameDir=/data/hadoop-name,hostPathDataDir=/data/hadoop-data,clusterName=Pegacorn,imageTag=1.0.0-snapshot,numOfPods=1 helm
+
+
 docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-hadoop-datanode:1.0.0-snapshot --file Dockerfile .
 
-FROM fhirfactory/pegacorn-base-hadoop:1.0.0
-
-
-docker run --rm -p 9870:9870 --name namenode-server pegacorn-hadoop-namenode:1.0.0-snapshot
-
-docker run --rm -p 9864:9864 --name datanode-server pegacorn-hadoop-datanode:1.0.0-snapshot
-
-docker run --rm --link namenode-server -p 9864:9864 --name datanode-server pegacorn-hadoop-datanode:1.0.0-snapshot
-
-
-cat /opt/hadoop-3.3.0/etc/hadoop/core-site.xml
-=======
->>>>>>> 816d200c4f90479b9c7bf7bbeebb40777692252c
+\helm\helm upgrade pegacorn-datanode-site-a --install --namespace site-a --set serviceName=pegacorn-datanode,hostPathNameDir=/data/hadoop-name,hostPathDataDir=/data/hadoop-data,imageTag=1.0.0-snapshot,numOfPods=1 helm
