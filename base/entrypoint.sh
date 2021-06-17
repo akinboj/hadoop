@@ -42,19 +42,35 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     echo "Configuring for multihomed network"
 
     # HDFS
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.data.dir file:///hadoop/dfs/data
+    addProperty /etc/hadoop/hdfs-site.xml dfs.replication 3
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.rpc-bind-host 0.0.0.0
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.servicerpc-bind-host 0.0.0.0
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.http-bind-host 0.0.0.0
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-bind-host 0.0.0.0
+    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.datanode.registration.ip-hostname-check false
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.use.datanode.hostname true
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.use.datanode.hostname true
 
     # YARN
+    addProperty /etc/hadoop/yarn-site.xml yarn.acl.enable 0
+    addProperty /etc/hadoop/yarn-site.xml yarn.resourcemanager.hostname ${MY_POD_IP}
+    addProperty /etc/hadoop/yarn-site.xml yarn.nodemanager.aux-services mapreduce_shuffle
+    addProperty /etc/hadoop/yarn-site.xml yarn.nodemanager.resource.memory-mb 3072
+    addProperty /etc/hadoop/yarn-site.xml yarn.scheduler.maximum-allocation-mb 3072
+    addProperty /etc/hadoop/yarn-site.xml yarn.scheduler.minimum-allocation-mb 512
     addProperty /etc/hadoop/yarn-site.xml yarn.resourcemanager.bind-host 0.0.0.0
     addProperty /etc/hadoop/yarn-site.xml yarn.nodemanager.bind-host 0.0.0.0
     addProperty /etc/hadoop/yarn-site.xml yarn.timeline-service.bind-host 0.0.0.0
 
     # MAPRED
+    addProperty /etc/hadoop/mapred-site.xml mapreduce.framework.name yarn
+    addProperty /etc/hadoop/mapred-site.xml yarn.app.mapreduce.am.env HADOOP_MAPRED_HOME=$HADOOP_HOME
+    addProperty /etc/hadoop/mapred-site.xml mapreduce.map.env HADOOP_MAPRED_HOME=$HADOOP_HOME
+    addProperty /etc/hadoop/mapred-site.xml mapreduce.reduce.env HADOOP_MAPRED_HOME=$HADOOP_HOME
+    addProperty /etc/hadoop/mapred-site.xml yarn.app.mapreduce.am.resource.mb 1024
+    addProperty /etc/hadoop/mapred-site.xml mapreduce.map.memory.mb 1024
+    addProperty /etc/hadoop/mapred-site.xml mapreduce.reduce.memory.mb 1024
     addProperty /etc/hadoop/mapred-site.xml yarn.nodemanager.bind-host 0.0.0.0
 fi
 

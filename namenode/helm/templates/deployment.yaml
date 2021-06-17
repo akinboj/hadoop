@@ -86,10 +86,6 @@ spec:
             memory: "{{ add 128 .Values.jvmMaxHeapSizeMB }}Mi"
         image: {{ .Values.dockerRepo }}pegacorn-hadoop-namenode:{{ .Values.imageTag }}            
         imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
-        # lifecycle:
-        #   postStart:
-        #     exec:
-        #       command: ["/bin/bash","-c","echo 192.168.1.25 dmzkube >> /etc/hosts; echo 192.168.2.25 privnetkube >> /etc/hosts"]
         livenessProbe:
           tcpSocket:
             port: 9870
