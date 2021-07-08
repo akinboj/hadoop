@@ -35,14 +35,33 @@ echo ""
 
 kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey jboss/admin@$REALM"
 kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k root.hdfs.keytab jboss/admin"
+kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey jboss@$REALM"
+kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k jboss.hdfs.keytab jboss"
+kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey HTTP/jboss@$REALM"
+kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k http.hdfs.keytab HTTP/jboss"
+
 # secure alpha datanode
 kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey alpha/admin@$REALM"
 kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k alpha.hdfs.keytab alpha/admin"
 
 mv root.hdfs.keytab ${KEYTAB_DIR}
 mv alpha.hdfs.keytab ${KEYTAB_DIR}
+mv jboss.hdfs.keytab ${KEYTAB_DIR}
+mv http.hdfs.keytab ${KEYTAB_DIR}
 chmod 400 ${KEYTAB_DIR}/root.hdfs.keytab
 chmod 400 ${KEYTAB_DIR}/alpha.hdfs.keytab
+chmod 400 ${KEYTAB_DIR}/http.hdfs.keytab
+# chown jboss:0 ${KEYTAB_DIR}/jboss.hdfs.keytab
+chmod 777 ${KEYTAB_DIR}/jboss.hdfs.keytab
+
+# kinit jboss/admin@$REALM -kt ${KEYTAB_DIR}/root.hdfs.keytab &
+# kinit HTTP/jboss@$REALM -kt ${KEYTAB_DIR}/http.hdfs.keytab &
+# kinit alpha/admin@$REALM -kt ${KEYTAB_DIR}/alpha.hdfs.keytab &
+kinit jboss@$REALM -kt ${KEYTAB_DIR}/jboss.hdfs.keytab &
+wait -n
+echo "NameNode TGT completed."
+# wait
+# echo "TGT for all Principals completed."
 
 ### Start entrypoint.sh
 ### https://github.com/big-data-europe/docker-hadoop/blob/master/base/entrypoint.sh
@@ -111,6 +130,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.use.datanode.hostname true
     addProperty /etc/hadoop/hdfs-site.xml dfs.permissions.superusergroup pegacorn
     addProperty /etc/hadoop/hdfs-site.xml dfs.replication 2
+    addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators jboss
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.keytab.file ${KEYTAB_DIR}/root.hdfs.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.principal jboss/admin@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true
@@ -118,6 +138,9 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.keystore.resource ssl-client.xml
     addProperty /etc/hadoop/hdfs-site.xml dfs.http.policy HTTPS_ONLY
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.need-auth false
+    addProperty /etc/hadoop/hdfs-site.xml dfs.web.authentication.kerberos.principal HTTP/jboss@${REALM}
+    addProperty /etc/hadoop/hdfs-site.xml dfs.web.authentication.kerberos.keytab ${KEYTAB_DIR}/http.hdfs.keytab
+    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.internal.spnego.principal ${dfs.web.authentication.kerberos.principal}
 
     # YARN ---- Not required in current release <configured for future use>
     addProperty /etc/hadoop/yarn-site.xml yarn.acl.enable 0
@@ -195,5 +218,3 @@ if [ "`ls -A $namedir`" == "" ]; then
 fi
 
 $HADOOP_HOME/bin/hdfs --config $HADOOP_CONF_DIR namenode
-
-exec $@

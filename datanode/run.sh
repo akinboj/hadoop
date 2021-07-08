@@ -6,6 +6,15 @@ REALM=PEGACORN-FHIRPLACE-NAMENODE.SITE-A
 echo ${NAMENODE_IP} pegacorn-fhirplace-namenode.kerberos.com >> /etc/hosts
 sed -i "s/localhost/pegacorn-fhirplace-namenode.kerberos.com/g" /etc/krb5.conf
 
+# kinit alpha/admin@$REALM -kt ${KEYTAB_DIR}/alpha.hdfs.keytab &
+# kinit jboss/admin@$REALM -kt ${KEYTAB_DIR}/root.hdfs.keytab &
+# kinit HTTP/jboss@$REALM -kt ${KEYTAB_DIR}/http.hdfs.keytab &
+kinit jboss@$REALM -kt ${KEYTAB_DIR}/jboss.hdfs.keytab &
+wait -n
+echo "DataNode TGT completed."
+# wait
+# echo "TGT for all Principals completed."
+
 # certificates
 cp /etc/hadoop/ssl/ca.crt /usr/local/share/ca-certificates
 update-ca-certificates --verbose
@@ -48,6 +57,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml fs.defaultFS hdfs://${CLUSTER_IP}:8020
     addProperty /etc/hadoop/core-site.xml hadoop.security.authentication kerberos
     addProperty /etc/hadoop/core-site.xml hadoop.security.authorization true
+    addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local DEFAULT
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.server.conf ssl-server.xml
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.client.conf ssl-client.xml
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.require.client.cert false
@@ -60,13 +70,13 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.kerberos.principal alpha/admin@$REALM
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.keytab.file ${KEYTAB_DIR}/alpha.hdfs.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.address 0.0.0.0:50010
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.https.address 0.0.0.0:9865
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.address ${MY_POD_NAME}:50010
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.https.address ${MY_POD_NAME}:9865
     addProperty /etc/hadoop/hdfs-site.xml dfs.data.transfer.protection integrity
     addProperty /etc/hadoop/hdfs-site.xml dfs.http.policy HTTPS_ONLY
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.need-auth false
     addProperty /etc/hadoop/hdfs-site.xml dfs.encrypt.data.transfer true
-    addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators root
+    addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators jboss
     addProperty /etc/hadoop/hdfs-site.xml dfs.https.server.keystore.resource ssl-server.xml
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.keystore.resource ssl-client.xml
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${CLUSTER_IP}:9871
@@ -80,5 +90,3 @@ if [ ! -d $datadir ]; then
 fi
 
 $HADOOP_HOME/bin/hdfs --config $HADOOP_CONF_DIR datanode
-
-exec $@

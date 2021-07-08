@@ -31,6 +31,10 @@
   <name>ssl.server.keystore.password</name>
   <value>hadoop</value>
 </property>
+<property>
+  <name>ssl.server.keystore.keypassword</name>
+  <value>hadoop</value>
+</property>
 
 <!-- Server Trust Store -->
 <property>
