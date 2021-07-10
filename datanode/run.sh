@@ -6,14 +6,9 @@ REALM=PEGACORN-FHIRPLACE-NAMENODE.SITE-A
 echo ${NAMENODE_IP} pegacorn-fhirplace-namenode.kerberos.com >> /etc/hosts
 sed -i "s/localhost/pegacorn-fhirplace-namenode.kerberos.com/g" /etc/krb5.conf
 
-# kinit alpha/admin@$REALM -kt ${KEYTAB_DIR}/alpha.hdfs.keytab &
-# kinit jboss/admin@$REALM -kt ${KEYTAB_DIR}/root.hdfs.keytab &
-# kinit HTTP/jboss@$REALM -kt ${KEYTAB_DIR}/http.hdfs.keytab &
-kinit jboss@$REALM -kt ${KEYTAB_DIR}/jboss.hdfs.keytab &
+kinit alpha/admin@$REALM -kt ${KEYTAB_DIR}/alpha.hdfs.keytab -V &
 wait -n
 echo "DataNode TGT completed."
-# wait
-# echo "TGT for all Principals completed."
 
 # certificates
 cp /etc/hadoop/ssl/ca.crt /usr/local/share/ca-certificates
@@ -79,7 +74,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators jboss
     addProperty /etc/hadoop/hdfs-site.xml dfs.https.server.keystore.resource ssl-server.xml
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.keystore.resource ssl-client.xml
-    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${CLUSTER_IP}:9871
+    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${NAMENODE_IP}:9871
 fi
 
 

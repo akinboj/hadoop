@@ -4,7 +4,8 @@
 # Ref: https://github.com/dosvath/kerberos-containers/blob/master/kdc-server/init-script.sh
 
 # kerberos client
-sed -i "s/localhost/${MY_POD_NAME}/g" /etc/krb5.conf
+echo ${MY_POD_IP} pegacorn-fhirplace-namenode.kerberos.com >> /etc/hosts
+sed -i "s/localhost/pegacorn-fhirplace-namenode.kerberos.com/g" /etc/krb5.conf
 
 # certificates
 cp /etc/hadoop/ssl/ca.crt /usr/local/share/ca-certificates
@@ -54,14 +55,10 @@ chmod 400 ${KEYTAB_DIR}/http.hdfs.keytab
 # chown jboss:0 ${KEYTAB_DIR}/jboss.hdfs.keytab
 chmod 777 ${KEYTAB_DIR}/jboss.hdfs.keytab
 
-# kinit jboss/admin@$REALM -kt ${KEYTAB_DIR}/root.hdfs.keytab &
-# kinit HTTP/jboss@$REALM -kt ${KEYTAB_DIR}/http.hdfs.keytab &
-# kinit alpha/admin@$REALM -kt ${KEYTAB_DIR}/alpha.hdfs.keytab &
-kinit jboss@$REALM -kt ${KEYTAB_DIR}/jboss.hdfs.keytab &
+kinit jboss/admin@$REALM -kt ${KEYTAB_DIR}/root.hdfs.keytab -V &
 wait -n
 echo "NameNode TGT completed."
-# wait
-# echo "TGT for all Principals completed."
+
 
 ### Start entrypoint.sh
 ### https://github.com/big-data-europe/docker-hadoop/blob/master/base/entrypoint.sh
@@ -130,7 +127,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.use.datanode.hostname true
     addProperty /etc/hadoop/hdfs-site.xml dfs.permissions.superusergroup pegacorn
     addProperty /etc/hadoop/hdfs-site.xml dfs.replication 2
-    addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators jboss
+    addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators '*'
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.keytab.file ${KEYTAB_DIR}/root.hdfs.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.principal jboss/admin@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true
@@ -140,7 +137,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.need-auth false
     addProperty /etc/hadoop/hdfs-site.xml dfs.web.authentication.kerberos.principal HTTP/jboss@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.web.authentication.kerberos.keytab ${KEYTAB_DIR}/http.hdfs.keytab
-    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.internal.spnego.principal ${dfs.web.authentication.kerberos.principal}
+    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.internal.spnego.principal HTTP/jboss@${REALM}
 
     # YARN ---- Not required in current release <configured for future use>
     addProperty /etc/hadoop/yarn-site.xml yarn.acl.enable 0
