@@ -119,14 +119,12 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.lifeline.rpc-bind-host 0.0.0.0
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.http-bind-host 0.0.0.0
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-bind-host 0.0.0.0
-    addProperty /etc/hadoop/hdfs-site.xml dfs.https.port 50470
-    addProperty /etc/hadoop/hdfs-site.xml dfs.https.address ${MY_POD_NAME}:50470
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${MY_POD_NAME}:9871
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.datanode.registration.ip-hostname-check false
-    addProperty /etc/hadoop/hdfs-site.xml dfs.client.use.datanode.hostname true
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.use.datanode.hostname true
+    # addProperty /etc/hadoop/hdfs-site.xml dfs.client.use.datanode.hostname true
+    # addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.use.datanode.hostname true
     addProperty /etc/hadoop/hdfs-site.xml dfs.permissions.superusergroup pegacorn
-    addProperty /etc/hadoop/hdfs-site.xml dfs.replication 2
+    addProperty /etc/hadoop/hdfs-site.xml dfs.replication 1
     addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators '*'
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.keytab.file ${KEYTAB_DIR}/root.hdfs.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.principal jboss/admin@${REALM}

@@ -61,7 +61,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml hadoop.rpc.protection privacy
 
     # HDFS
-    addProperty /etc/hadoop/hdfs-site.xml dfs.replication 2
+    addProperty /etc/hadoop/hdfs-site.xml dfs.replication 1
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.kerberos.principal alpha/admin@$REALM
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.keytab.file ${KEYTAB_DIR}/alpha.hdfs.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true
@@ -74,7 +74,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators jboss
     addProperty /etc/hadoop/hdfs-site.xml dfs.https.server.keystore.resource ssl-server.xml
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.keystore.resource ssl-client.xml
-    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${NAMENODE_IP}:9871
+    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${CLUSTER_IP}:9871
 fi
 
 
