@@ -103,6 +103,12 @@ spec:
         - containerPort: 9865
           name: datanode
           protocol: TCP
+        - containerPort: 9866
+          name: data-transfer
+          protocol: TCP
+        - containerPort: 9867
+          name: ipc-metadata
+          protocol: TCP
         readinessProbe:
           tcpSocket:
             port: 9865

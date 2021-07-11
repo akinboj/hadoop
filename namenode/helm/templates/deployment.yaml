@@ -98,7 +98,7 @@ spec:
         - containerPort: 8778
           name: jolokia
           protocol: TCP
-        - containerPort: 8020
+        - containerPort: 9820
           name: namenode
           protocol: TCP
         - containerPort: 9000
