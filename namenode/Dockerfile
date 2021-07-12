@@ -7,6 +7,9 @@ HEALTHCHECK CMD curl -f http://localhost:9870/ || exit 1
 ENV MULTIHOMED_NETWORK=1
 ENV HDFS_CONF_dfs_namenode_name_dir=file:///hadoop/dfs/namenode
 ENV KEYTAB_DIR=/etc/security/keytabs
+# ENV HADOOP_JAAS_DEBUG=true
+# ENV HADOOP_OPTS="-Dsun.security.krb5.debug=true"
+# ENV HADOOP_ROOT_LOGGER=TRACE,console;
 
 RUN mkdir -p /hadoop/dfs/namenode
 RUN mkdir -p /etc/security/keytabs
@@ -24,7 +27,7 @@ RUN chmod -R 777 /etc/krb5kdc
 RUN mkdir -p /var/log/kerberos
 RUN mkdir -p /etc/hadoop/ssl
 RUN chmod -R 444 /etc/hadoop/ssl
-COPY ssl-client.xml /etc/hadoop/ssl-client.xml
+# COPY ssl-client.xml /etc/hadoop/ssl-client.xml
 COPY ssl-server.xml /etc/hadoop/ssl-server.xml
 
 ARG IMAGE_BUILD_TIMESTAMP
@@ -35,7 +38,7 @@ RUN echo IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}
 EXPOSE 9000 9820 9871
 
 # Kerberos ports
-EXPOSE 88 464 749
+EXPOSE 88 464 749 750
 
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh
