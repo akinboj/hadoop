@@ -4,8 +4,8 @@
 # Ref: https://github.com/dosvath/kerberos-containers/blob/master/kdc-server/init-script.sh
 
 # kerberos client
-echo ${MY_POD_IP} pegacorn-fhirplace-namenode.kerberos.com >> /etc/hosts
-sed -i "s/localhost/pegacorn-fhirplace-namenode.kerberos.com/g" /etc/krb5.conf
+# echo ${MY_POD_IP} pegacorn-fhirplace-namenode.kerberos.com >> /etc/hosts
+sed -i "s/localhost/${MY_POD_IP}/g" /etc/krb5.conf
 
 # certificates
 cp /etc/hadoop/ssl/ca.crt /usr/local/share/ca-certificates
@@ -112,6 +112,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.keystores.factory.class org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory
     addProperty /etc/hadoop/core-site.xml hadoop.rpc.protection privacy
     addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.signature.secret.file ${KEYTAB_DIR}/hadoop-http-auth-signature-secret
+    addProperty /etc/hadoop/core-site.xml hadoop.http.staticuser.user dr.who
     
 
     # HDFS

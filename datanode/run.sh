@@ -3,8 +3,8 @@
 REALM=PEGACORN-FHIRPLACE-NAMENODE.SITE-A
 
 # kerberos client
-echo ${NAMENODE_IP} pegacorn-fhirplace-namenode.kerberos.com >> /etc/hosts
-sed -i "s/localhost/pegacorn-fhirplace-namenode.kerberos.com/g" /etc/krb5.conf
+# echo ${NAMENODE_IP} pegacorn-fhirplace-namenode.kerberos.com >> /etc/hosts
+sed -i "s/localhost/${NAMENODE_IP}/g" /etc/krb5.conf
 
 kinit alpha/admin@$REALM -kt ${KEYTAB_DIR}/alpha.hdfs.keytab -V &
 wait -n
