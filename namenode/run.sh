@@ -101,7 +101,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     echo "Configuring for multihomed network"
 
     # CORE
-    addProperty /etc/hadoop/core-site.xml fs.defaultFS hdfs://${MY_POD_NAME}:9820
+    addProperty /etc/hadoop/core-site.xml fs.defaultFS hdfs://${MY_POD_IP}:9820
     addProperty /etc/hadoop/core-site.xml hadoop.security.authentication kerberos
     addProperty /etc/hadoop/core-site.xml hadoop.security.authorization true
     addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local DEFAULT
@@ -115,7 +115,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     
 
     # HDFS
-    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${MY_POD_NAME}:9871
+    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${MY_POD_IP}:9871
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.datanode.registration.ip-hostname-check false
     # addProperty /etc/hadoop/hdfs-site.xml dfs.client.use.datanode.hostname true
     addProperty /etc/hadoop/hdfs-site.xml dfs.encrypt.data.transfer true

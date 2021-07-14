@@ -49,7 +49,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     echo "Configuring for multihomed network"
 
     # CORE
-    addProperty /etc/hadoop/core-site.xml fs.defaultFS hdfs://${CLUSTER_IP}:9820
+    addProperty /etc/hadoop/core-site.xml fs.defaultFS hdfs://${NAMENODE_IP}:9820
     addProperty /etc/hadoop/core-site.xml hadoop.security.authentication kerberos
     addProperty /etc/hadoop/core-site.xml hadoop.security.authorization true
     addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local DEFAULT
@@ -60,19 +60,20 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.keystores.factory.class org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory
     addProperty /etc/hadoop/core-site.xml hadoop.rpc.protection privacy
     addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.signature.secret.file ${KEYTAB_DIR}/hadoop-http-auth-signature-secret
+    addProperty /etc/hadoop/core-site.xml hadoop.http.staticuser.user dr.who
 
     # HDFS
     addProperty /etc/hadoop/hdfs-site.xml dfs.replication 1
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.kerberos.principal alpha/admin@$REALM
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.keytab.file ${KEYTAB_DIR}/alpha.hdfs.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.address ${MY_POD_NAME}:9866
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.https.address ${MY_POD_NAME}:9865
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.ipc.address ${MY_POD_NAME}:9867
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.address ${MY_POD_IP}:9866
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.https.address ${MY_POD_IP}:9865
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.ipc.address ${MY_POD_IP}:9867
     addProperty /etc/hadoop/hdfs-site.xml dfs.http.policy HTTPS_ONLY
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.need-auth false
     addProperty /etc/hadoop/hdfs-site.xml dfs.data.transfer.protection privacy
-    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${CLUSTER_IP}:9871
+    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${NAMENODE_IP}:9871
 fi
 
 

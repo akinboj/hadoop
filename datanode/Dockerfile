@@ -9,6 +9,7 @@ ENV HDFS_CONF_dfs_datanode_data_dir=file:///hadoop/dfs/datanode
 ENV KEYTAB_DIR=/etc/security/keytabs
 
 RUN mkdir -p /hadoop/dfs/datanode
+COPY hadoop-env.sh /opt/hadoop-3.3.0/etc/hadoop/hadoop-env.sh
 
 # Kerberos configuration
 COPY krb5.conf /etc/krb5.conf
