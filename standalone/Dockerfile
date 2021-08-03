@@ -1,7 +1,4 @@
-FROM openjdk:8
-MAINTAINER Ivan Ermilov <ivan.s.ermilov@gmail.com>
-
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends net-tools curl netcat
+FROM fhirfactory/pegacorn-base-hadoop:1.0.0
 
 ENV HBASE_VERSION 1.2.6
 ENV HBASE_URL http://www.apache.org/dist/hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-bin.tar.gz
@@ -22,7 +19,12 @@ ENV HBASE_CONF_DIR=/etc/hbase
 ENV USER=root
 ENV PATH $HBASE_PREFIX/bin/:$PATH
 
-ADD entrypoint.sh /entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
 RUN chmod a+x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
+
+COPY run.sh /run.sh
+RUN chmod +x /run.sh
+
+CMD ["/run.sh"]
