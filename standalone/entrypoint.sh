@@ -17,18 +17,31 @@ function configure() {
 
     local var
     local value
-
+    
     echo "Configuring $module"
-    for c in `printenv | perl -sne 'print "$1 " if m/^${envPrefix}_(.+?)=.*/' -- -envPrefix=$envPrefix`; do
-        name=`echo ${c} | perl -pe 's/___/-/g; s/__/_/g; s/_/./g'`
+    for c in `printenv | perl -sne 'print "$1 " if m/^${envPrefix}_(.+?)=.*/' -- -envPrefix=$envPrefix`; do 
+        name=`echo ${c} | perl -pe 's/___/-/g; s/__/@/g; s/_/./g; s/@/_/g;'`
         var="${envPrefix}_${c}"
         value=${!var}
         echo " - Setting $name=$value"
-        addProperty /etc/hbase/$module-site.xml $name "$value"
+        addProperty $path $name "$value"
     done
 }
 
 configure /etc/hbase/hbase-site.xml hbase HBASE_CONF
+
+if [ "$MULTIHOMED_NETWORK" = "1" ]; then
+    echo "Configuring for multihomed network"
+
+    # CORE
+    addProperty /etc/hbase/hbase-site.xml hbase.master.port 16000
+    addProperty /etc/hbase/hbase-site.xml hbase.master.info.port 16010
+    addProperty /etc/hbase/hbase-site.xml hbase.regionserver.port 16020
+    addProperty /etc/hbase/hbase-site.xml hbase.regionserver.info.port 16030
+    addProperty /etc/hbase/hbase-site.xml hbase.zookeeper.quorum ${KUBERNETES_SERVICE_NAME}"."${KUBERNETES_NAMESPACE}
+    addProperty /etc/hbase/hbase-site.xml hbase.localcluster.port.ephemeral false
+    addProperty /etc/hbase/hbase-site.xml hbase.zookeeper.property.clientPort 32416
+fi
 
 function wait_for_it()
 {
