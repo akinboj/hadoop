@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo 127.0.0.1 ${KUBERNETES_SERVICE_NAME}"."${KUBERNETES_NAMESPACE} >> /etc/hosts
 function addProperty() {
   local path=$1
   local name=$2
@@ -39,8 +40,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hbase/hbase-site.xml hbase.regionserver.port 16020
     addProperty /etc/hbase/hbase-site.xml hbase.regionserver.info.port 16030
     addProperty /etc/hbase/hbase-site.xml hbase.zookeeper.quorum ${KUBERNETES_SERVICE_NAME}"."${KUBERNETES_NAMESPACE}
-    addProperty /etc/hbase/hbase-site.xml hbase.localcluster.port.ephemeral false
-    addProperty /etc/hbase/hbase-site.xml hbase.zookeeper.property.clientPort 32416
+    # addProperty /etc/hbase/hbase-site.xml hbase.localcluster.port.ephemeral false
 fi
 
 function wait_for_it()

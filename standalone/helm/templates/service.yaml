@@ -22,6 +22,7 @@ spec:
     port: {{ add 0 .Values.basePort }}
     protocol: TCP
     targetPort: 16010
+    nodePort: {{ if (.Values.serviceType) and (eq .Values.serviceType "NodePort")}} {{ .Values.basePort }} {{ end }}
   - name: masterport
     port: {{ add 1 .Values.basePort }}
     protocol: TCP
@@ -46,6 +47,7 @@ spec:
     port: {{ add 6 .Values.basePort }}
     protocol: TCP
     targetPort: 2181
+    nodePort: {{ if (.Values.serviceType) and (eq .Values.serviceType "NodePort")}} {{ add 6 .Values.basePort }} {{ end }}
   selector:
     app: {{ .Values.serviceName }}
   type: {{ .Values.serviceType | default "LoadBalancer" }}
