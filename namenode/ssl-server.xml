@@ -20,14 +20,14 @@
 
 <property>
   <name>ssl.server.truststore.location</name>
-  <value>/etc/hadoop/ssl/pegacorn-hadoop-truststore.jks</value>
+  <value>/etc/hadoop/ssl/pegacorn-fhirplace-namenode.site-a-cert.jks</value>
   <description>Truststore to be used by NN and DN. Must be specified.
   </description>
 </property>
 
 <property>
   <name>ssl.server.truststore.password</name>
-  <value>hadoop</value>
+  <value>Peg@cornTrustSt0reNM</value>
   <description>Optional. Default value is "".
   </description>
 </property>
@@ -49,22 +49,15 @@
 
 <property>
   <name>ssl.server.keystore.location</name>
-  <value>/etc/hadoop/ssl/NameNode.jks</value>
+  <value>/etc/hadoop/ssl/pegacorn-fhirplace-namenode.site-a.jks</value>
   <description>Keystore to be used by NN and DN. Must be specified.
   </description>
 </property>
 
 <property>
   <name>ssl.server.keystore.password</name>
-  <value>hadoop</value>
+  <value>Peg@cornK3yNM</value>
   <description>Must be specified</description>
-</property>
-
-<property>
-  <name>ssl.server.keystore.keypassword</name>
-  <value>hadoop</value>
-  <description>Must be specified.
-  </description>
 </property>
 
 <property>

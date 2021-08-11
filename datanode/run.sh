@@ -3,15 +3,15 @@
 REALM=PEGACORN-FHIRPLACE-NAMENODE.SITE-A
 
 # kerberos client
-# echo ${NAMENODE_IP} pegacorn-fhirplace-namenode.kerberos.com >> /etc/hosts
-sed -i "s/localhost/${NAMENODE_IP}/g" /etc/krb5.conf
+sed -i "s/kdcserver/${KDC_SERVER}:88/g" /etc/krb5.conf
+sed -i "s/kdcadmin/${KDC_SERVER}:749/g" /etc/krb5.conf
 
 kinit alpha/admin@$REALM -kt ${KEYTAB_DIR}/alpha.hdfs.keytab -V &
 wait -n
 echo "DataNode TGT completed."
 
 # certificates
-cp /etc/hadoop/ssl/ca.crt /usr/local/share/ca-certificates
+cp ${CERTS}/ca.cer /usr/local/share/ca-certificates
 update-ca-certificates --verbose
 
 function addProperty() {
@@ -49,7 +49,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     echo "Configuring for multihomed network"
 
     # CORE
-    addProperty /etc/hadoop/core-site.xml fs.defaultFS hdfs://${NAMENODE_IP}:9820
+    addProperty /etc/hadoop/core-site.xml fs.defaultFS hdfs://${CLUSTER_IP}:9820
     addProperty /etc/hadoop/core-site.xml hadoop.security.authentication kerberos
     addProperty /etc/hadoop/core-site.xml hadoop.security.authorization true
     addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local DEFAULT
@@ -59,7 +59,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.hostname.verifier ALLOW_ALL
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.keystores.factory.class org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory
     addProperty /etc/hadoop/core-site.xml hadoop.rpc.protection privacy
-    addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.signature.secret.file ${KEYTAB_DIR}/hadoop-http-auth-signature-secret
+    addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.signature.secret.file ${CERTS}/hadoop-http-auth-signature-secret
     addProperty /etc/hadoop/core-site.xml hadoop.http.staticuser.user dr.who
 
     # HDFS
@@ -73,7 +73,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.http.policy HTTPS_ONLY
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.need-auth false
     addProperty /etc/hadoop/hdfs-site.xml dfs.data.transfer.protection privacy
-    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${NAMENODE_IP}:9871
+    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${CLUSTER_IP}:9871
 fi
 
 

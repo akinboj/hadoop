@@ -1,64 +1,22 @@
 #!/bin/bash
 
-# Kerberos KDC server configuration
-# Ref: https://github.com/dosvath/kerberos-containers/blob/master/kdc-server/init-script.sh
+set -e
 
 # kerberos client
-# echo ${MY_POD_IP} pegacorn-fhirplace-namenode.kerberos.com >> /etc/hosts
-sed -i "s/localhost/${MY_POD_IP}/g" /etc/krb5.conf
+sed -i "s/kdcserver/${KDC_SERVER}:88/g" /etc/krb5.conf
+sed -i "s/kdcadmin/${KDC_SERVER}:749/g" /etc/krb5.conf
 
 # certificates
-cp /etc/hadoop/ssl/ca.crt /usr/local/share/ca-certificates
+cp ${CERTS}/ca.cer /usr/local/share/ca-certificates
 update-ca-certificates --verbose
 
-echo "==== Creating realm ==============================================================="
-echo "==================================================================================="
-# TDL -- Use HELM env variables for passwords
-MASTER_PASSWORD=Peg@corn
-KADMIN_PRINCIPAL=root/admin
 REALM=PEGACORN-FHIRPLACE-NAMENODE.SITE-A
-KADMIN_PRINCIPAL_FULL=$KADMIN_PRINCIPAL@$REALM
-# This command also starts the krb5-kdc and krb5-admin-server services
-krb5_newrealm <<EOF
-$MASTER_PASSWORD
-$MASTER_PASSWORD
-EOF
-echo ""
 
+echo "==== Authenticating to realm ==============================================================="
 echo "==================================================================================="
-echo "==== Creating hdfs principal in the acl ======================================="
-echo "==================================================================================="
-echo "Adding $KADMIN_PRINCIPAL principal"
-# kadmin.local -q "delete_principal -force K/M@PEGACORN-FHIRPLACE-NAMENODE.SITE-A"
-echo ""
-kadmin.local -q "addprinc -pw $MASTER_PASSWORD $KADMIN_PRINCIPAL_FULL"
-echo ""
-
-kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey jboss/admin@$REALM"
-kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k root.hdfs.keytab jboss/admin"
-kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey jboss@$REALM"
-kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k jboss.hdfs.keytab jboss"
-kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey HTTP/jboss@$REALM"
-kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k http.hdfs.keytab HTTP/jboss"
-
-# secure alpha datanode
-kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey alpha/admin@$REALM"
-kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k alpha.hdfs.keytab alpha/admin"
-
-mv root.hdfs.keytab ${KEYTAB_DIR}
-mv alpha.hdfs.keytab ${KEYTAB_DIR}
-mv jboss.hdfs.keytab ${KEYTAB_DIR}
-mv http.hdfs.keytab ${KEYTAB_DIR}
-chmod 400 ${KEYTAB_DIR}/root.hdfs.keytab
-chmod 400 ${KEYTAB_DIR}/alpha.hdfs.keytab
-chmod 400 ${KEYTAB_DIR}/http.hdfs.keytab
-# chown jboss:0 ${KEYTAB_DIR}/jboss.hdfs.keytab
-chmod 777 ${KEYTAB_DIR}/jboss.hdfs.keytab
-
 kinit jboss/admin@$REALM -kt ${KEYTAB_DIR}/root.hdfs.keytab -V &
 wait -n
 echo "NameNode TGT completed."
-
 
 ### Start entrypoint.sh
 ### https://github.com/big-data-europe/docker-hadoop/blob/master/base/entrypoint.sh
@@ -92,10 +50,6 @@ function configure() {
 
 configure /etc/hadoop/core-site.xml core CORE_CONF
 configure /etc/hadoop/hdfs-site.xml hdfs HDFS_CONF
-configure /etc/hadoop/yarn-site.xml yarn YARN_CONF
-configure /etc/hadoop/httpfs-site.xml httpfs HTTPFS_CONF
-configure /etc/hadoop/kms-site.xml kms KMS_CONF
-configure /etc/hadoop/mapred-site.xml mapred MAPRED_CONF
 
 if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     echo "Configuring for multihomed network"
@@ -111,14 +65,14 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.hostname.verifier ALLOW_ALL
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.keystores.factory.class org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory
     addProperty /etc/hadoop/core-site.xml hadoop.rpc.protection privacy
-    addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.signature.secret.file ${KEYTAB_DIR}/hadoop-http-auth-signature-secret
+    addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.signature.secret.file ${CERTS}/hadoop-http-auth-signature-secret
     addProperty /etc/hadoop/core-site.xml hadoop.http.staticuser.user dr.who
     
 
     # HDFS
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${MY_POD_IP}:9871
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.datanode.registration.ip-hostname-check false
-    # addProperty /etc/hadoop/hdfs-site.xml dfs.client.use.datanode.hostname true
+    addProperty /etc/hadoop/hdfs-site.xml dfs.client.use.datanode.hostname false
     addProperty /etc/hadoop/hdfs-site.xml dfs.encrypt.data.transfer true
     addProperty /etc/hadoop/hdfs-site.xml dfs.permissions.superusergroup pegacorn
     addProperty /etc/hadoop/hdfs-site.xml dfs.replication 1
@@ -180,8 +134,8 @@ if [ -z "$CLUSTER_NAME" ]; then
   exit 2
 fi
 
-echo "remove lost+found from $namedir"
-rm -r $namedir/lost+found
+# echo "remove lost+found from $namedir"
+# rm -r $namedir/lost+found
 
 if [ "`ls -A $namedir`" == "" ]; then
   echo "Formatting namenode name directory: $namedir"

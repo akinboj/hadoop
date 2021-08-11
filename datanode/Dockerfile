@@ -7,8 +7,10 @@ HEALTHCHECK CMD curl -f http://localhost:9864/ || exit 1
 ENV MULTIHOMED_NETWORK=1
 ENV HDFS_CONF_dfs_datanode_data_dir=file:///hadoop/dfs/datanode
 ENV KEYTAB_DIR=/etc/security/keytabs
+ENV CERTS=/etc/hadoop/ssl
 
 RUN mkdir -p /hadoop/dfs/datanode
+RUN mkdir -p /etc/hadoop/ssl
 COPY hadoop-env.sh /opt/hadoop-3.3.0/etc/hadoop/hadoop-env.sh
 
 # Kerberos configuration
