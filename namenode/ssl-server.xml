@@ -67,4 +67,10 @@
   </description>
 </property>
 
+<property>
+  <name>ssl.server.keystore.keypassword</name>
+  <value>Peg@cornK3yNM</value>
+  <description>Must be specified</description>
+</property>
+
 </configuration>

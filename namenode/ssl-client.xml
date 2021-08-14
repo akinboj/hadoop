@@ -20,7 +20,7 @@
 
 <property>
   <name>ssl.client.truststore.location</name>
-  <value>/etc/hadoop/ssl/pegacorn-hadoop-truststore.jks</value>
+  <value>/etc/hadoop/ssl/pegacorn-fhirplace-namenode.site-a-cert.jks</value>
   <description>Truststore to be used by clients like distcp. Must be
   specified.
   </description>
@@ -28,7 +28,7 @@
 
 <property>
   <name>ssl.client.truststore.password</name>
-  <value>hadoop</value>
+  <value>Peg@cornTrustSt0reNM</value>
   <description>Optional. Default value is "".
   </description>
 </property>
@@ -50,7 +50,7 @@
 
 <property>
   <name>ssl.client.keystore.location</name>
-  <value>/etc/hadoop/ssl/DataNode.jks</value>
+  <value>/etc/hadoop/ssl/pegacorn-fhirplace-namenode.site-a.jks</value>
   <description>Keystore to be used by clients like distcp. Must be
   specified.
   </description>
@@ -58,14 +58,14 @@
 
 <property>
   <name>ssl.client.keystore.password</name>
-  <value>hadoop</value>
+  <value>Peg@cornK3yNM</value>
   <description>Optional. Default value is "".
   </description>
 </property>
 
 <property>
   <name>ssl.client.keystore.keypassword</name>
-  <value>hadoop</value>
+  <value>Peg@cornK3yNM</value>
   <description>Optional. Default value is "".
   </description>
 </property>

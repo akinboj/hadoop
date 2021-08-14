@@ -26,34 +26,32 @@ echo "==========================================================================
 echo "==== Creating hdfs principal in the acl ======================================="
 echo "==================================================================================="
 echo "Adding $KADMIN_PRINCIPAL principal"
-# kadmin.local -q "delete_principal -force K/M@PEGACORN-FHIRPLACE-NAMENODE.SITE-A"
 echo ""
 kadmin.local -q "addprinc -pw $MASTER_PASSWORD $KADMIN_PRINCIPAL_FULL"
 echo ""
 
 echo "========== Writing keytab to ${KEYTAB_DIR} ========== "
-kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey jboss/admin@$REALM"
-kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k root.hdfs.keytab jboss/admin"
 kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey jboss@$REALM"
 kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k jboss.hdfs.keytab jboss"
+kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey fhirplace@$REALM"
+kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k fhirplace.hdfs.keytab fhirplace"
 kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey HTTP/jboss@$REALM"
 kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k http.hdfs.keytab HTTP/jboss"
 
 # secure alpha datanode
-kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey alpha/admin@$REALM"
-kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k alpha.hdfs.keytab alpha/admin"
+kadmin -p root/admin -w ${MASTER_PASSWORD} -q "addprinc -randkey alpha@$REALM"
+kadmin -p root/admin -w ${MASTER_PASSWORD} -q "xst -k alpha.hdfs.keytab alpha"
 echo ""
 
 echo "Moving keytab files to mount location"
-mv root.hdfs.keytab ${KEYTAB_DIR}
-mv alpha.hdfs.keytab ${KEYTAB_DIR}
 mv jboss.hdfs.keytab ${KEYTAB_DIR}
+mv alpha.hdfs.keytab ${KEYTAB_DIR}
+mv fhirplace.hdfs.keytab ${KEYTAB_DIR}
 mv http.hdfs.keytab ${KEYTAB_DIR}
-chmod 400 ${KEYTAB_DIR}/root.hdfs.keytab
+chmod 400 ${KEYTAB_DIR}/jboss.hdfs.keytab
 chmod 400 ${KEYTAB_DIR}/alpha.hdfs.keytab
 chmod 400 ${KEYTAB_DIR}/http.hdfs.keytab
-# chown jboss:0 ${KEYTAB_DIR}/jboss.hdfs.keytab
-chmod 777 ${KEYTAB_DIR}/jboss.hdfs.keytab
+chmod 777 ${KEYTAB_DIR}/fhirplace.hdfs.keytab
 echo ""
 
 echo "KDC Server Configuration Successful"
