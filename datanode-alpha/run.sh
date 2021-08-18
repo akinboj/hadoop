@@ -6,7 +6,7 @@ REALM=PEGACORN-FHIRPLACE-NAMENODE.SITE-A
 sed -i "s/kdcserver/${KDC_SERVER}:88/g" /etc/krb5.conf
 sed -i "s/kdcadmin/${KDC_SERVER}:749/g" /etc/krb5.conf
 
-kinit alpha/admin@$REALM -kt ${KEYTAB_DIR}/alpha.hdfs.keytab -V &
+kinit root/${MY_HOST_IP}@$REALM -kt ${KEYTAB_DIR}/root.hdfs.keytab -V &
 wait -n
 echo "DataNode TGT completed."
 
@@ -58,21 +58,23 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.require.client.cert false
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.hostname.verifier ALLOW_ALL
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.keystores.factory.class org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory
-    addProperty /etc/hadoop/core-site.xml hadoop.rpc.protection privacy
+    addProperty /etc/hadoop/core-site.xml hadoop.rpc.protection authentication
     addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.signature.secret.file ${CERTS}/hadoop-http-auth-signature-secret
 
     # HDFS
     addProperty /etc/hadoop/hdfs-site.xml dfs.replication 1
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.kerberos.principal alpha/admin@$REALM
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.keytab.file ${KEYTAB_DIR}/alpha.hdfs.keytab
+    addProperty /etc/hadoop/hdfs-site.xml dfs.permissions.superusergroup pegacorn
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.kerberos.principal root/${MY_HOST_IP}@$REALM
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.keytab.file ${KEYTAB_DIR}/root.hdfs.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.address 0.0.0.0:9866
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.https.address 0.0.0.0:9865
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.ipc.address 0.0.0.0:9867
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.address ${MY_POD_IP}:9866
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.https.address ${MY_POD_IP}:9865
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.ipc.address ${MY_POD_IP}:9867
     addProperty /etc/hadoop/hdfs-site.xml dfs.http.policy HTTPS_ONLY
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.need-auth false
-    addProperty /etc/hadoop/hdfs-site.xml dfs.data.transfer.protection privacy
-    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address 0.0.0.0:9871
+    addProperty /etc/hadoop/hdfs-site.xml dfs.encrypt.data.transfer false
+    addProperty /etc/hadoop/hdfs-site.xml dfs.data.transfer.protection authentication
+    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${CLUSTER_IP}:9871
 fi
 
 
