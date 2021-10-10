@@ -1,5 +1,12 @@
 #!/bin/bash
 
+set -e
+
+if [ -f "/hadoop/dfs/datanode/in_use.lock" ]; then
+echo "removing existing filelock : /hadoop/dfs/datanode/in_use.lock"
+rm -f /hadoop/dfs/datanode/in_use.lock
+fi
+
 function addProperty() {
   local path=$1
   local name=$2
@@ -29,12 +36,17 @@ function configure() {
 }
 
 configure /etc/hadoop/core-site.xml core CORE_CONF
+configure /etc/hadoop/hdfs-site.xml hdfs HDFS_CONF
 
 if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     echo "Configuring for multihomed network"
 
     # CORE
-    addProperty /etc/hadoop/core-site.xml fs.defaultFS hdfs://${CLUSTER_IP}:8020
+    addProperty /etc/hadoop/core-site.xml fs.defaultFS hdfs://${CLUSTER_IP}:17300
+
+    # HDFS
+    addProperty /etc/hadoop/hdfs-site.xml dfs.replication 2
+    
 fi
 
 
@@ -45,3 +57,5 @@ if [ ! -d $datadir ]; then
 fi
 
 $HADOOP_HOME/bin/hdfs --config $HADOOP_CONF_DIR datanode
+
+exec $@

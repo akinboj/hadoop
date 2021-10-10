@@ -1,15 +1,76 @@
-# Build base image
-docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-base-hadoop:1.0.0 --file Dockerfile .
+(Run in cmd [Administrator mode] except where noted)
 
-# Deploy Master Node (NameNode)
-docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-hadoop-namenode:1.0.0-snapshot --file Dockerfile .
-\helm\helm upgrade pegacorn-namenode-site-a --install --namespace site-a --set serviceName=pegacorn-namenode,hostPathNameDir=/data/hadoop-name,hostPathDataDir=/data/hadoop-data,clusterName=Pegacorn,imageTag=1.0.0-snapshot,numOfPods=1 helm
+RUN THIS AS A SEPARATE COMMANDLINE!!!
+Run the Alpine command to mount your volumes:
+docker container run --rm -it -v /:/host alpine
+chroot /host
+***
 
+# Build base images -- This was built and pushed to fhirfactory docker hub
+docker build --rm -t pegacorn-base-hadoop:1.0.0 --file Dockerfile . // (PLS DO NOT RUN THIS COMMAND)
+docker build --rm -t pegacorn-base-hbase:1.0.0 --file Dockerfile . // (PLS DO NOT RUN THIS COMMAND)
+docker build --rm -t pegacorn-base-zookeeper:1.0.0 --file Dockerfile . // (PLS DO NOT RUN THIS COMMAND)
+
+=====================================================================================================================================
+# Deploy Hadoop Master Node (NameNode)
+cd to namenode folder:
+docker pull fhirfactory/pegacorn-base-hadoop:1.0.0
+docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-fhirplace-namenode:1.0.0-snapshot --file Dockerfile .
+
+helm upgrade pegacorn-fhirplace-namenode-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-namenode,hostPathNamenode=/data/hadoop-namenode,clusterName=Pegacorn,imageTag=1.0.0-snapshot,numOfPods=1 helm
+
+Add the following to your hosts file (with Notepad [Adminstrator mode]) - C:\Windows\System32\drivers\etc
+127.0.0.1 pegacorn-fhirplace-namenode.site-a
+
+To view HDFS Web:
+http://pegacorn-fhirplace-namenode.site-a:17302
 
 # Deploy Worker Nodes (DataNodes)
-docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-hadoop-datanode:1.0.0-snapshot --file Dockerfile .
+cd to datanode folder:
+docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-fhirplace-datanode:1.0.0-snapshot --file Dockerfile .
 
 # Retrieve CLUSTER-IP of NameNode service
-kubectl get svc pegacorn-namenode -n site-a --no-headers | awk {'print $3'}
+kubectl get svc pegacorn-fhirplace-namenode -n site-a --no-headers | awk {'print $3'}
 
-\helm\helm upgrade pegacorn-datanode-site-a --install --namespace site-a --set serviceName=pegacorn-datanode,hostPathNameDir=/data/hadoop-name,hostPathDataDir=/data/hadoop-data,clusterIP=10.107.247.45,imageTag=1.0.0-snapshot,numOfPods=3 helm
+helm upgrade pegacorn-fhirplace-datanode-alpha-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-datanode-alpha,nameNodeIP=[$CLUSTER-IP],hostPathDatanode=/data/hadoop-datanode-alpha,imageTag=1.0.0-snapshot,numOfPods=1 helm
+
+helm upgrade pegacorn-fhirplace-datanode-beta-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-datanode-beta,nameNodeIP=[$CLUSTER-IP],hostPathDatanode=/data/hadoop-datanode-beta,imageTag=1.0.0-snapshot,numOfPods=1 helm
+
+Add the following to your hosts file (with Notepad [Adminstrator mode]) - C:\Windows\System32\drivers\etc
+127.0.0.1 pegacorn-fhirplace-datanode-alpha.site-a
+127.0.0.1 pegacorn-fhirplace-datanode-beta.site-a
+
+================================================================================================================================================
+# Hadoop Database setup -- In order of resource compliance
+
+# Deploy Zookeeper Server (Zookeeper manages the HBase cluster)
+cd to zookeeper folder:
+docker pull fhirfactory/pegacorn-base-zookeeper:1.0.0
+docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-fhirplace-zookeeper:1.0.0-snapshot --file Dockerfile .
+
+helm upgrade pegacorn-fhirplace-hbase-zookeeper-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-hbase-zookeeper,imagePullPolicy=Never,basePort=32310,hostPathZKData=/data/zookeeper-data,imageTag=1.0.0-snapshot,numOfPods=1 helm
+
+# Deploy HBase Master server (HBase master is the management server for Hbase Region clusters)
+cd to hmaster folder:
+docker pull fhirfactory/pegacorn-base-hbase:1.0.0
+docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-fhirplace-hbase-master:1.0.0-snapshot --file Dockerfile .
+
+# Retrieve CLUSTER-IP of NameNode service
+kubectl get svc pegacorn-fhirplace-namenode -n site-a --no-headers | awk {'print $3'}
+
+# Retrieve CLUSTER-IP of Zookeeper service
+kubectl get svc pegacorn-fhirplace-hbase-zookeeper -n site-a --no-headers | awk {'print $3'}
+
+helm upgrade pegacorn-fhirplace-hbase-master-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-hbase-master,nameNodeIP=[$NAMENODE_CLUSTER_IP],zooKeeperIP=[$ZOOKEEPER_CLUSTER_IP],imagePullPolicy=Never,basePort=32410,hostPathHbMaster=/data/hbase-master,imageTag=1.0.0-snapshot,numOfPods=1 helm
+
+Add the following to your hosts file (with Notepad [Adminstrator mode]) - C:\Windows\System32\drivers\etc
+127.0.0.1 pegacorn-fhirplace-hbase-master.site-a
+
+To view Hbase Web:
+http://pegacorn-fhirplace-hbase-master.site-a:17312
+
+# Deply Hbase Region servers - 2 pods
+cd to hregionserver folder:
+docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-fhirplace-hbase-region:1.0.0-snapshot --file Dockerfile .
+
+helm upgrade pegacorn-fhirplace-hbase-region-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-hbase-region,nameNodeIP=[$NAMENODE_CLUSTER_IP],zooKeeperIP=[$ZOOKEEPER_CLUSTER_IP],imagePullPolicy=Never,basePort=32210,hostPathHbRegion=/data/hbase-region,imageTag=1.0.0-snapshot,numOfPods=2 helm

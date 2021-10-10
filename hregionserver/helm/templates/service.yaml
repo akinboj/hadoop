@@ -10,7 +10,7 @@ metadata:
     # From https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/rfc2136.md
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.dnsEntry }}
     {{- end }}    
-    prometheus.io/port: "9779"
+    prometheus.io/port: "9870"
     prometheus.io/scrape: "true"
   labels:
     app: {{ .Values.serviceName }}
@@ -18,14 +18,16 @@ metadata:
   name: {{ .Values.serviceName }}
 spec:
   ports:
-  - name: namenode
-    port: 17300
+  - name: regionserver
+    port: 17316
     protocol: TCP
-    targetPort: 8020
-  - name: hadoop-web
-    port: 17302
+    targetPort: 16020
+    nodePort: {{ if (.Values.serviceType) and (eq .Values.serviceType "NodePort")}} {{ add 0 .Values.basePort }} {{ end }}
+  - name: region-info
+    port: 17318
     protocol: TCP
-    targetPort: 9870
+    targetPort: 16030
+    nodePort: {{ if (.Values.serviceType) and (eq .Values.serviceType "NodePort")}} {{ add 1 .Values.basePort }} {{ end }}
   selector:
     app: {{ .Values.serviceName }}
   type: {{ .Values.serviceType | default "LoadBalancer" }}
